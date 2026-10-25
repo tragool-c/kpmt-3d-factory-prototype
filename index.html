@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071015" />
+    <title>KPMT 3D Factory Navigator</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark">K</span>
+          <div>
+            <p class="eyebrow">CNC INTELLIGENCE SYSTEM</p>
+            <h1>3D Factory Navigator</h1>
+          </div>
+        </div>
+        <div class="demo-badge"><i></i> DEMO DATA</div>
+        <div class="header-metrics" aria-label="สถานะระบบจำลอง">
+          <div><span>7</span><small>PRODUCTION LINES</small></div>
+          <div><span id="machine-total">0</span><small>MACHINES</small></div>
+          <div><span class="live-value">LOCAL</span><small>DATA SOURCE</small></div>
+        </div>
+      </header>
+
+      <aside class="line-panel glass-panel" aria-label="รายการไลน์การผลิต">
+        <div class="panel-heading">
+          <span>PRODUCTION LINES</span>
+          <small>เลือกเพื่อซูมเข้า</small>
+        </div>
+        <nav id="line-list"></nav>
+        <div class="system-note">
+          <strong>Visual layer</strong>
+          <p>ตำแหน่งและ Machine No. เป็นข้อมูลจำลองสำหรับทดสอบหน้าจอ</p>
+        </div>
+      </aside>
+
+      <main class="viewport" id="viewport">
+        <div class="viewport-grid"></div>
+        <div class="scene-caption">
+          <span class="caption-index">01</span>
+          <div><strong>FACTORY OVERVIEW</strong><small>ลากเพื่อหมุน • Scroll เพื่อซูม • คลิกเครื่องเพื่อดูข้อมูล</small></div>
+        </div>
+        <div class="loading-screen" id="loading-screen">
+          <div class="loader-ring"></div>
+          <p>กำลังประกอบโรงงานจำลอง…</p>
+        </div>
+        <div class="hover-tooltip" id="hover-tooltip"></div>
+      </main>
+
+      <aside class="machine-panel glass-panel" id="machine-panel">
+        <div class="panel-heading">
+          <span>MACHINE MASTER</span>
+          <small>ข้อมูลจำลอง</small>
+        </div>
+        <div class="empty-state" id="empty-state">
+          <div class="scan-icon"><span></span></div>
+          <h2>เลือกเครื่องจักร</h2>
+          <p>คลิกโมเดลเครื่อง CNC เพื่อเปิดข้อมูล Machine Master และสถานะจำลอง</p>
+        </div>
+        <div class="machine-detail" id="machine-detail" hidden>
+          <div class="machine-id-row">
+            <div><small>MACHINE NO.</small><h2 id="detail-machine-id">—</h2></div>
+            <span class="status-pill" id="detail-status">—</span>
+          </div>
+          <div class="machine-visual"><div class="machine-glyph"><i></i><i></i><i></i></div></div>
+          <dl>
+            <div><dt>Production Line</dt><dd id="detail-line">—</dd></div>
+            <div><dt>Machine Master ID</dt><dd id="detail-master-id">—</dd></div>
+            <div><dt>Controller</dt><dd id="detail-controller">—</dd></div>
+            <div><dt>Connection</dt><dd><span class="connection-dot"></span> Demo / Offline</dd></div>
+          </dl>
+          <button class="primary-action" type="button">OPEN MACHINE MASTER <span>↗</span></button>
+          <p class="action-note">ปุ่มนี้ยังไม่เชื่อมระบบ Production</p>
+        </div>
+      </aside>
+
+      <div class="control-dock" aria-label="เครื่องมือควบคุมมุมมอง">
+        <button id="home-view" type="button" title="กลับมุมมองรวม">⌂<span>ภาพรวม</span></button>
+        <button id="toggle-rotate" type="button" title="หมุนอัตโนมัติ">↻<span>Auto rotate</span></button>
+        <button id="toggle-plan" class="active" type="button" title="เปิดหรือปิดผังอ้างอิง">▦<span>ผังอ้างอิง</span></button>
+      </div>
+
+      <div class="mobile-tools" aria-label="แผงควบคุมสำหรับมือถือ">
+        <button id="mobile-lines" type="button">LINES</button>
+        <button id="mobile-machine" type="button">MACHINE</button>
+      </div>
+
+      <footer class="statusbar">
+        <span>PROTOTYPE 0.1</span>
+        <span class="statusbar-line"></span>
+        <span>Source: AutoCAD plot reference</span>
+        <span class="statusbar-spacer"></span>
+        <span>Not for engineering measurement</span>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
