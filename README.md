@@ -15,6 +15,10 @@ Unless stated below, machine numbers, statuses, controllers, and Master IDs are 
 
 `LOADER VALVE 2` is the first hybrid-data pilot. Its eight machine identities come from a read-only Machine Master Production v4 snapshot. The three MAKINO J4 machines use a dedicated procedural low-poly model. Their positions and rotations remain visual approximations until a DXF layout is supplied. Other production lines still use demo data.
 
+Use `?line=VALVE` to open a direct focused view with persistent labels for all eight verified machines and blue locator pads for the three MAKINO J4 models.
+
+Use `?focus=J4` for the phone-friendly close view of `MC049`, `MC050`, and `MC051` only.
+
 ## Run locally
 
 ```powershell

@@ -239,7 +239,7 @@ function createCncMachine(data, size) {
 function createMakinoJ4(data, size) {
   const group = new THREE.Group();
   group.userData = data;
-  const accent = new THREE.Color(lineTypes[data.lineType].color);
+  const accent = new THREE.Color(0x26c6ee);
   const whiteMaterial = material(0xe6e9e5, { roughness: 0.72, metalness: 0.12 });
   whiteMaterial.emissive = accent.clone();
   whiteMaterial.emissiveIntensity = 0.025;
@@ -247,11 +247,13 @@ function createMakinoJ4(data, size) {
   const windowMaterial = material(0x071012, { roughness: 0.12, metalness: 0.16, emissive: 0x0e5260, emissiveIntensity: 0.12 });
   const panelMaterial = material(0x243136, { roughness: 0.44, metalness: 0.48 });
   const makinoBlue = material(0x1799c5, { emissive: 0x07546d, emissiveIntensity: 0.35 });
+  const locatorMaterial = material(0x26c6ee, { transparent: true, opacity: 0.42, emissive: 0x26c6ee, emissiveIntensity: 0.8 });
 
   const w = size.w * 1.08;
   const h = size.h * 1.28;
   const d = size.d * 1.06;
 
+  addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), locatorMaterial, [0, 0.035, 0], [w * 1.24, 0.045, d * 1.2]);
   addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), darkMaterial, [0, 0.13, 0], [w * 0.96, 0.2, d]);
   addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), whiteMaterial, [0, h * 0.56, -d * 0.1], [w, h * 0.88, d * 0.78]);
   addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), whiteMaterial, [-w * 0.22, h * 0.34, d * 0.38], [w * 0.56, h * 0.54, d * 0.34]);
@@ -268,8 +270,9 @@ function createMakinoJ4(data, size) {
   addInteractiveMesh(group, new THREE.CylinderGeometry(0.065, 0.065, 0.1, 12), statusMaterial, [-w * 0.38, h * 1.34, -d * 0.2]);
 
   group.userData.bodyMaterial = whiteMaterial;
-  const label = makeLabelSprite(`${data.machineId} · ${data.station}`, lineTypes[data.lineType].color);
-  label.position.set(0, h + 0.92, 0);
+  const label = makeLabelSprite(`${data.machineId} · ${data.station}`, '#26c6ee');
+  label.scale.set(0.8, 0.22, 1);
+  label.position.set(0, h + 0.72, 0);
   label.visible = false;
   group.userData.label = label;
   group.add(label);
@@ -400,6 +403,17 @@ const tooltip = document.querySelector('#hover-tooltip');
 let hoveredMachine = null;
 let selectedMachine = null;
 let cameraTween = null;
+let focusedLine = null;
+let focusedModelType = null;
+
+function hasPersistentLabel(machine) {
+  return Boolean(
+    focusedLine
+    && machine?.userData.verifiedMaster
+    && machine.userData.lineType === focusedLine
+    && (!focusedModelType || machine.userData.modelType === focusedModelType),
+  );
+}
 
 const selectionRing = new THREE.Mesh(
   new THREE.RingGeometry(0.48, 0.58, 48),
@@ -426,7 +440,7 @@ function getMachineFromPointer(event) {
 function setHoveredMachine(machine, event) {
   if (hoveredMachine && hoveredMachine !== selectedMachine) {
     hoveredMachine.userData.bodyMaterial.emissiveIntensity = 0.025;
-    hoveredMachine.userData.label.visible = false;
+    hoveredMachine.userData.label.visible = hasPersistentLabel(hoveredMachine);
   }
   hoveredMachine = machine;
   if (!machine) {
@@ -453,7 +467,7 @@ renderer.domElement.addEventListener('click', (event) => {
 function selectMachine(machine) {
   if (selectedMachine && selectedMachine !== machine) {
     selectedMachine.userData.bodyMaterial.emissiveIntensity = 0.025;
-    selectedMachine.userData.label.visible = false;
+    selectedMachine.userData.label.visible = hasPersistentLabel(selectedMachine);
   }
   selectedMachine = machine;
   machine.userData.bodyMaterial.emissiveIntensity = 0.42;
@@ -513,11 +527,53 @@ function focusLine(type) {
     new THREE.Vector3(center.x + reach * 1.15, reach * 1.12 + 3.8, center.z + reach * 1.28),
     new THREE.Vector3(center.x, 0.15, center.z),
   );
+  focusedLine = type;
+  focusedModelType = null;
+  machineRoots.forEach((machine) => {
+    machine.userData.label.visible = hasPersistentLabel(machine) || machine === selectedMachine || machine === hoveredMachine;
+  });
+  const isLoaderValve = type === 'VALVE';
+  document.querySelector('#focus-banner').hidden = !isLoaderValve;
+  document.querySelector('#scene-title').textContent = isLoaderValve ? 'LOADER VALVE 2 · REAL DATA' : lineTypes[type].name;
+  document.querySelector('#scene-subtitle').textContent = isLoaderValve
+    ? 'ป้ายสีฟ้า = MAKINO J4 · แตะเครื่องเพื่อดู Machine Master'
+    : 'ลากเพื่อหมุน • Scroll เพื่อซูม • คลิกเครื่องเพื่อดูข้อมูล';
   document.querySelectorAll('.line-button').forEach((button) => button.classList.toggle('active', button.dataset.line === type));
+}
+
+function focusMakinoJ4() {
+  const targets = machineRoots.filter((machine) => machine.userData.modelType === 'makino-j4');
+  if (!targets.length) return;
+  const bounds = new THREE.Box3();
+  targets.forEach((machine) => bounds.expandByObject(machine));
+  const center = bounds.getCenter(new THREE.Vector3());
+  const size = bounds.getSize(new THREE.Vector3());
+  const reach = Math.max(size.x, size.z, 2.2);
+  focusedLine = 'VALVE';
+  focusedModelType = 'makino-j4';
+  machineRoots.forEach((machine) => {
+    machine.userData.label.visible = hasPersistentLabel(machine) || machine === selectedMachine || machine === hoveredMachine;
+  });
+  tweenCamera(
+    new THREE.Vector3(center.x + reach * 1.05, reach * 1.45 + 2.2, center.z + reach * 1.15),
+    new THREE.Vector3(center.x, 0.3, center.z),
+  );
+  document.querySelector('#focus-banner').hidden = false;
+  document.querySelector('#scene-title').textContent = 'MAKINO J4 · 3 MACHINES';
+  document.querySelector('#scene-subtitle').textContent = 'MC049 · MC050 · MC051 — แตะเครื่องเพื่อดู Machine Master';
+  document.querySelectorAll('.line-button').forEach((button) => button.classList.toggle('active', button.dataset.line === 'VALVE'));
 }
 
 document.querySelector('#home-view').addEventListener('click', () => {
   tweenCamera(new THREE.Vector3(15, 18, 20), new THREE.Vector3(0, 0, 0));
+  focusedLine = null;
+  focusedModelType = null;
+  machineRoots.forEach((machine) => {
+    machine.userData.label.visible = machine === selectedMachine || machine === hoveredMachine;
+  });
+  document.querySelector('#focus-banner').hidden = true;
+  document.querySelector('#scene-title').textContent = 'FACTORY OVERVIEW';
+  document.querySelector('#scene-subtitle').textContent = 'ลากเพื่อหมุน • Scroll เพื่อซูม • คลิกเครื่องเพื่อดูข้อมูล';
   document.querySelectorAll('.line-button').forEach((button) => button.classList.remove('active'));
 });
 
@@ -557,6 +613,15 @@ mobileMachineButton.addEventListener('click', () => {
   machinePanel.classList.toggle('mobile-open', shouldOpen);
   mobileMachineButton.classList.toggle('active', shouldOpen);
 });
+
+const urlParameters = new URLSearchParams(window.location.search);
+const requestedFocus = urlParameters.get('focus')?.toUpperCase();
+const requestedLine = urlParameters.get('line')?.toUpperCase();
+if (requestedFocus === 'J4') {
+  window.setTimeout(focusMakinoJ4, 350);
+} else if (requestedLine && lineTypes[requestedLine]) {
+  window.setTimeout(() => focusLine(requestedLine), 350);
+}
 
 function updateCameraTween(time) {
   if (!cameraTween) return;
