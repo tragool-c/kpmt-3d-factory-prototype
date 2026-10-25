@@ -16,11 +16,11 @@
             <h1>3D Factory Navigator</h1>
           </div>
         </div>
-        <div class="demo-badge"><i></i> DEMO DATA</div>
+        <div class="demo-badge verified"><i></i> MASTER + DEMO</div>
         <div class="header-metrics" aria-label="สถานะระบบจำลอง">
           <div><span>7</span><small>PRODUCTION LINES</small></div>
           <div><span id="machine-total">0</span><small>MACHINES</small></div>
-          <div><span class="live-value">LOCAL</span><small>DATA SOURCE</small></div>
+          <div><span class="live-value">HYBRID</span><small>DATA SOURCE</small></div>
         </div>
       </header>
 
@@ -32,7 +32,7 @@
         <nav id="line-list"></nav>
         <div class="system-note">
           <strong>Visual layer</strong>
-          <p>ตำแหน่งและ Machine No. เป็นข้อมูลจำลองสำหรับทดสอบหน้าจอ</p>
+          <p>LOADER VALVE 2 ใช้ Machine Master จริง 8 เครื่อง · ตำแหน่งบนผังเป็นค่าประมาณ</p>
         </div>
       </aside>
 
@@ -52,12 +52,12 @@
       <aside class="machine-panel glass-panel" id="machine-panel">
         <div class="panel-heading">
           <span>MACHINE MASTER</span>
-          <small>ข้อมูลจำลอง</small>
+          <small>ข้อมูลจริง + จำลอง</small>
         </div>
         <div class="empty-state" id="empty-state">
           <div class="scan-icon"><span></span></div>
           <h2>เลือกเครื่องจักร</h2>
-          <p>คลิกโมเดลเครื่อง CNC เพื่อเปิดข้อมูล Machine Master และสถานะจำลอง</p>
+          <p>คลิกเครื่องเพื่อดู Machine Master; LOADER VALVE 2 ใช้ข้อมูลจริงแบบ Read-only</p>
         </div>
         <div class="machine-detail" id="machine-detail" hidden>
           <div class="machine-id-row">
@@ -66,10 +66,16 @@
           </div>
           <div class="machine-visual"><div class="machine-glyph"><i></i><i></i><i></i></div></div>
           <dl>
+            <div><dt>Machine Name</dt><dd id="detail-name">—</dd></div>
             <div><dt>Production Line</dt><dd id="detail-line">—</dd></div>
             <div><dt>Machine Master ID</dt><dd id="detail-master-id">—</dd></div>
+            <div><dt>Brand / Model</dt><dd id="detail-model">—</dd></div>
+            <div><dt>Station</dt><dd id="detail-station">—</dd></div>
+            <div><dt>Priority</dt><dd id="detail-priority">—</dd></div>
             <div><dt>Controller</dt><dd id="detail-controller">—</dd></div>
-            <div><dt>Connection</dt><dd><span class="connection-dot"></span> Demo / Offline</dd></div>
+            <div><dt>Data Source</dt><dd id="detail-source">—</dd></div>
+            <div><dt>Position</dt><dd id="detail-position">—</dd></div>
+            <div><dt>Connection</dt><dd><span class="connection-dot"></span><span id="detail-connection">—</span></dd></div>
           </dl>
           <button class="primary-action" type="button">OPEN MACHINE MASTER <span>↗</span></button>
           <p class="action-note">ปุ่มนี้ยังไม่เชื่อมระบบ Production</p>
@@ -90,9 +96,9 @@
       <footer class="statusbar">
         <span>PROTOTYPE 0.1</span>
         <span class="statusbar-line"></span>
-        <span>Source: AutoCAD plot reference</span>
+        <span>Source: AutoCAD plot + Machine Master v4 snapshot</span>
         <span class="statusbar-spacer"></span>
-        <span>Not for engineering measurement</span>
+        <span>LOADER VALVE 2 positions approximate · Not for engineering measurement</span>
       </footer>
     </div>
     <script type="module" src="/src/main.js"></script>

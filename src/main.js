@@ -88,7 +88,7 @@ const lineTypes = {
   HYD: { name: '3P HYD', color: '#55c88a', controller: 'FANUC 0i-MF' },
   TMC: { name: 'TM C28, C63', color: '#ff6b63', controller: 'FANUC 31i-B' },
   HST: { name: 'HST COMBINED', color: '#e6d855', controller: 'Mitsubishi M80' },
-  VALVE: { name: 'LOADER VALVE', color: '#6f777a', controller: 'FANUC 0i-MD' },
+  VALVE: { name: 'LOADER VALVE 2', color: '#6f777a', controller: 'Mixed controllers' },
   GH4B: { name: 'GH4B', color: '#64aef2', controller: 'FANUC 0i-MF Plus' },
   CLUTCH: { name: 'CLUTCH CYLINDER', color: '#ff9d2d', controller: 'Mitsubishi M80' },
   TMBX: { name: 'TM BX [NEW MODEL]', color: '#9a78d0', controller: 'FANUC 31i-B5 Plus' },
@@ -119,8 +119,46 @@ const zones = [
   { id: 'tmc-bottom-b', type: 'TMC', rect: [780, 1040, 876, 1218], machines: 4 },
 ];
 
+// Read-only snapshot from the canonical Machine Master Production v4 API.
+// Positions are visual approximations until the AutoCAD DXF is available.
+const loaderValve2Machines = [
+  {
+    machineId: 'MC049', masterId: 'KPMT-MC-0081', machineName: 'CNC MACHINING LV2-OP2',
+    brand: 'MAKINO', model: 'J4', station: 'OP2', controller: 'FANUC SERIES : 210i-MB', priority: 'A', modelType: 'makino-j4',
+  },
+  {
+    machineId: 'MC050', masterId: 'KPMT-MC-0082', machineName: 'CNC MACHINING LV2-OP3',
+    brand: 'MAKINO', model: 'J4', station: 'OP3', controller: 'FANUC SERIES : 210i-MB', priority: 'A', modelType: 'makino-j4',
+  },
+  {
+    machineId: 'MC051', masterId: 'KPMT-MC-0083', machineName: 'CNC MACHINING LV2-OP4',
+    brand: 'MAKINO', model: 'J4', station: 'OP4', controller: 'FANUC SERIES : 210i-MB', priority: 'A', modelType: 'makino-j4',
+  },
+  {
+    machineId: 'MC048', masterId: 'KPMT-MC-0080', machineName: 'CNC MACHINING LV2-OP1',
+    brand: 'MORISEIKI', model: 'NV4000 DCG', station: 'OP1', controller: 'FANUC SERIES : 31i-B', priority: 'A',
+  },
+  {
+    machineId: 'HN005', masterId: 'KPMT-MC-0084', machineName: 'HONING MACHINE LV2-ST1-OP5',
+    brand: 'TOYO', model: 'SL7', station: 'ST1-OP5', controller: 'PLC', priority: 'B',
+  },
+  {
+    machineId: 'HN006', masterId: 'KPMT-MC-0085', machineName: 'HONING MACHINE LV2-ST2-OP6',
+    brand: 'TOYO', model: 'SL7', station: 'ST2-OP6', controller: 'PLC', priority: 'B',
+  },
+  {
+    machineId: 'WA016', masterId: 'KPMT-MC-0086', machineName: 'WASHING MACHINE LV2-OP7',
+    brand: 'KATAOKA', model: 'SPC-203-B', station: 'OP7', controller: 'PLC', priority: 'B',
+  },
+  {
+    machineId: 'ES004', masterId: 'KPMT-MC-0087', machineName: 'END SCOPE LV1-OP8',
+    brand: 'MAPOSS', model: 'E4N LVDT', station: 'OP8', controller: '—', priority: 'B',
+  },
+];
+let loaderValve2Cursor = 0;
+
 const statusSequence = ['RUNNING', 'RUNNING', 'IDLE', 'RUNNING', 'PM', 'RUNNING', 'ALARM'];
-const statusColors = { RUNNING: '#35d7d0', IDLE: '#8d9ba0', PM: '#ffb33f', ALARM: '#ff5d5d' };
+const statusColors = { RUNNING: '#35d7d0', IDLE: '#8d9ba0', PM: '#ffb33f', ALARM: '#ff5d5d', ACTIVE: '#55c88a' };
 const machineRoots = [];
 const interactiveParts = [];
 const lineGroups = new Map();
@@ -198,6 +236,46 @@ function createCncMachine(data, size) {
   return group;
 }
 
+function createMakinoJ4(data, size) {
+  const group = new THREE.Group();
+  group.userData = data;
+  const accent = new THREE.Color(lineTypes[data.lineType].color);
+  const whiteMaterial = material(0xe6e9e5, { roughness: 0.72, metalness: 0.12 });
+  whiteMaterial.emissive = accent.clone();
+  whiteMaterial.emissiveIntensity = 0.025;
+  const darkMaterial = material(0x10191c, { roughness: 0.4, metalness: 0.52 });
+  const windowMaterial = material(0x071012, { roughness: 0.12, metalness: 0.16, emissive: 0x0e5260, emissiveIntensity: 0.12 });
+  const panelMaterial = material(0x243136, { roughness: 0.44, metalness: 0.48 });
+  const makinoBlue = material(0x1799c5, { emissive: 0x07546d, emissiveIntensity: 0.35 });
+
+  const w = size.w * 1.08;
+  const h = size.h * 1.28;
+  const d = size.d * 1.06;
+
+  addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), darkMaterial, [0, 0.13, 0], [w * 0.96, 0.2, d]);
+  addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), whiteMaterial, [0, h * 0.56, -d * 0.1], [w, h * 0.88, d * 0.78]);
+  addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), whiteMaterial, [-w * 0.22, h * 0.34, d * 0.38], [w * 0.56, h * 0.54, d * 0.34]);
+  addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), whiteMaterial, [w * 0.26, h * 0.37, d * 0.38], [w * 0.35, h * 0.6, d * 0.32]);
+  addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), windowMaterial, [-w * 0.23, h * 0.43, d * 0.56], [w * 0.26, h * 0.26, 0.025]);
+  addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), panelMaterial, [w * 0.32, h * 0.46, d * 0.57], [w * 0.17, h * 0.38, 0.06]);
+  addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), makinoBlue, [-w * 0.05, h * 0.63, d * 0.57], [w * 0.18, 0.035, 0.035]);
+
+  const roof = addInteractiveMesh(group, new THREE.BoxGeometry(1, 1, 1), whiteMaterial, [0, h * 1.02, -d * 0.12], [w * 0.78, h * 0.28, d * 0.74]);
+  roof.rotation.z = -0.16;
+
+  const statusMaterial = material(statusColors.ACTIVE, { emissive: statusColors.ACTIVE, emissiveIntensity: 1.25 });
+  addInteractiveMesh(group, new THREE.CylinderGeometry(0.035, 0.035, 0.28, 10), darkMaterial, [-w * 0.38, h * 1.16, -d * 0.2]);
+  addInteractiveMesh(group, new THREE.CylinderGeometry(0.065, 0.065, 0.1, 12), statusMaterial, [-w * 0.38, h * 1.34, -d * 0.2]);
+
+  group.userData.bodyMaterial = whiteMaterial;
+  const label = makeLabelSprite(`${data.machineId} · ${data.station}`, lineTypes[data.lineType].color);
+  label.position.set(0, h + 0.92, 0);
+  label.visible = false;
+  group.userData.label = label;
+  group.add(label);
+  return group;
+}
+
 function createZone(zone) {
   const [x1, y1, x2, y2] = zone.rect;
   const a = worldFromPixel(x1, y1);
@@ -242,16 +320,30 @@ function createZone(zone) {
     const z = center.z - depth / 2 + cellD * (row + 0.5);
     lineCounters[zone.type] += 1;
     const sequence = String(lineCounters[zone.type]).padStart(2, '0');
-    const machineId = `${zone.type}-${sequence}`;
-    const status = statusSequence[(index + lineCounters[zone.type]) % statusSequence.length];
-    const machine = createCncMachine({
-      machineId,
+    const actualMachine = zone.type === 'VALVE' ? loaderValve2Machines[loaderValve2Cursor++] : null;
+    const status = actualMachine ? 'ACTIVE' : statusSequence[(index + lineCounters[zone.type]) % statusSequence.length];
+    const machineData = actualMachine ? {
+      ...actualMachine,
+      lineType: zone.type,
+      lineName: 'LOADER VALVE 2',
+      status,
+      dataSource: 'Machine Master Production v4',
+      positionAccuracy: 'Approximate from plotted layout',
+      verifiedMaster: true,
+    } : {
+      machineId: `${zone.type}-${sequence}`,
       masterId: `MM-DEMO-${zone.type}-${sequence}`,
       lineType: zone.type,
       lineName: line.name,
       controller: line.controller,
       status,
-    }, { w: machineW, h: machineH, d: machineD });
+      dataSource: 'Demo data',
+      positionAccuracy: 'Visual simulation',
+      verifiedMaster: false,
+    };
+    const machine = actualMachine?.modelType === 'makino-j4'
+      ? createMakinoJ4(machineData, { w: machineW, h: machineH, d: machineD })
+      : createCncMachine(machineData, { w: machineW, h: machineH, d: machineD });
     machine.position.set(x, 0.12, z);
     machine.rotation.y = longAxisIsDepth ? Math.PI / 2 : 0;
     group.add(machine);
@@ -344,7 +436,7 @@ function setHoveredMachine(machine, event) {
   }
   machine.userData.bodyMaterial.emissiveIntensity = 0.28;
   machine.userData.label.visible = true;
-  tooltip.textContent = `${machine.userData.machineId} · ${machine.userData.status}`;
+  tooltip.textContent = `${machine.userData.machineId}${machine.userData.station ? ` · ${machine.userData.station}` : ''} · ${machine.userData.status}`;
   tooltip.style.display = 'block';
   tooltip.style.left = `${event.clientX + 14}px`;
   tooltip.style.top = `${event.clientY + 14}px`;
@@ -375,9 +467,20 @@ function selectMachine(machine) {
   const detail = document.querySelector('#machine-detail');
   detail.hidden = false;
   document.querySelector('#detail-machine-id').textContent = machine.userData.machineId;
+  document.querySelector('#detail-name').textContent = machine.userData.machineName || 'Demo CNC machine';
   document.querySelector('#detail-line').textContent = machine.userData.lineName;
   document.querySelector('#detail-master-id').textContent = machine.userData.masterId;
   document.querySelector('#detail-controller').textContent = machine.userData.controller;
+  document.querySelector('#detail-model').textContent = machine.userData.brand
+    ? `${machine.userData.brand} ${machine.userData.model}`
+    : 'Generic CNC (Demo)';
+  document.querySelector('#detail-station').textContent = machine.userData.station || '—';
+  document.querySelector('#detail-priority').textContent = machine.userData.priority || '—';
+  document.querySelector('#detail-source').textContent = machine.userData.dataSource;
+  document.querySelector('#detail-position').textContent = machine.userData.positionAccuracy;
+  document.querySelector('#detail-connection').textContent = machine.userData.verifiedMaster
+    ? 'Read-only verified snapshot'
+    : 'Demo / Offline';
   const status = document.querySelector('#detail-status');
   status.textContent = machine.userData.status;
   status.style.color = statusColors[machine.userData.status];

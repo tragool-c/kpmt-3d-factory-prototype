@@ -11,7 +11,9 @@ Interactive visual prototype built from the supplied AutoCAD plot image.
 - Click a simulated CNC machine to open a Machine Master panel.
 - Toggle the AutoCAD plot reference beneath the 3D objects.
 
-All machine numbers, statuses, controllers, and Master IDs are demo data. This prototype is not suitable for engineering measurement or production decisions.
+Unless stated below, machine numbers, statuses, controllers, and Master IDs are demo data. This prototype is not suitable for engineering measurement or production decisions.
+
+`LOADER VALVE 2` is the first hybrid-data pilot. Its eight machine identities come from a read-only Machine Master Production v4 snapshot. The three MAKINO J4 machines use a dedicated procedural low-poly model. Their positions and rotations remain visual approximations until a DXF layout is supplied. Other production lines still use demo data.
 
 ## Run locally
 
