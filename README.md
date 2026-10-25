@@ -13,7 +13,7 @@ Interactive visual prototype built from the supplied AutoCAD plot image.
 
 Unless stated below, machine numbers, statuses, controllers, and Master IDs are demo data. This prototype is not suitable for engineering measurement or production decisions.
 
-`LOADER VALVE 2` is the first hybrid-data pilot. Its eight machine identities come from a read-only Machine Master Production v4 snapshot. The three MAKINO J4 machines use a dedicated procedural low-poly model. Their positions and rotations remain visual approximations until a DXF layout is supplied. Other production lines still use demo data.
+`LOADER VALVE 2` is the first hybrid-data pilot. Its eight machine identities come from a read-only Machine Master Production v4 snapshot. The three MAKINO J4 machines use a dedicated procedural low-poly model. All eight machines are plot-aligned to the right-hand gray block as a two-row U-flow pilot. Exact station direction remains pending site confirmation or DXF evidence. Other production lines still use demo data.
 
 Use `?line=VALVE` to open a direct focused view with persistent labels for all eight verified machines and blue locator pads for the three MAKINO J4 models.
 

@@ -100,14 +100,13 @@ const zones = [
   { id: 'hst-main', type: 'HST', rect: [458, 247, 544, 671], machines: 6 },
   { id: 'gh4b-main', type: 'GH4B', rect: [550, 247, 633, 477], machines: 3 },
   { id: 'clutch-main', type: 'CLUTCH', rect: [552, 484, 631, 535], machines: 2 },
-  { id: 'valve-main', type: 'VALVE', rect: [552, 537, 634, 668], machines: 3 },
   { id: 'tmbx-main', type: 'TMBX', rect: [669, 244, 916, 669], machines: 10 },
   { id: 'tmc-mid-a', type: 'TMC', rect: [226, 768, 351, 901], machines: 4 },
   { id: 'hst-mid-a', type: 'HST', rect: [353, 768, 431, 901], machines: 3 },
   { id: 'tmbx-mid-a', type: 'TMBX', rect: [432, 766, 634, 901], machines: 6 },
   { id: 'tmc-mid-b', type: 'TMC', rect: [668, 765, 845, 901], machines: 5 },
   { id: 'tmbx-mid-b', type: 'TMBX', rect: [846, 707, 1042, 900], machines: 6 },
-  { id: 'valve-low', type: 'VALVE', rect: [226, 921, 453, 1019], machines: 5 },
+  { id: 'valve-low', type: 'VALVE', rect: [351, 921, 453, 1019], machines: 8 },
   { id: 'hyd-low', type: 'HYD', rect: [456, 922, 530, 1018], machines: 2 },
   { id: 'gh4b-low', type: 'GH4B', rect: [531, 922, 635, 1018], machines: 3 },
   { id: 'hst-low', type: 'HST', rect: [668, 918, 751, 1017], machines: 2 },
@@ -125,34 +124,42 @@ const loaderValve2Machines = [
   {
     machineId: 'MC049', masterId: 'KPMT-MC-0081', machineName: 'CNC MACHINING LV2-OP2',
     brand: 'MAKINO', model: 'J4', station: 'OP2', controller: 'FANUC SERIES : 210i-MB', priority: 'A', modelType: 'makino-j4',
+    plot: { x: 388, y: 948, rotation: 0 },
   },
   {
     machineId: 'MC050', masterId: 'KPMT-MC-0082', machineName: 'CNC MACHINING LV2-OP3',
     brand: 'MAKINO', model: 'J4', station: 'OP3', controller: 'FANUC SERIES : 210i-MB', priority: 'A', modelType: 'makino-j4',
+    plot: { x: 412, y: 948, rotation: 0 },
   },
   {
     machineId: 'MC051', masterId: 'KPMT-MC-0083', machineName: 'CNC MACHINING LV2-OP4',
     brand: 'MAKINO', model: 'J4', station: 'OP4', controller: 'FANUC SERIES : 210i-MB', priority: 'A', modelType: 'makino-j4',
+    plot: { x: 436, y: 948, rotation: 0 },
   },
   {
     machineId: 'MC048', masterId: 'KPMT-MC-0080', machineName: 'CNC MACHINING LV2-OP1',
     brand: 'MORISEIKI', model: 'NV4000 DCG', station: 'OP1', controller: 'FANUC SERIES : 31i-B', priority: 'A',
+    plot: { x: 364, y: 948, rotation: 0 },
   },
   {
     machineId: 'HN005', masterId: 'KPMT-MC-0084', machineName: 'HONING MACHINE LV2-ST1-OP5',
     brand: 'TOYO', model: 'SL7', station: 'ST1-OP5', controller: 'PLC', priority: 'B',
+    plot: { x: 436, y: 991, rotation: 180 },
   },
   {
     machineId: 'HN006', masterId: 'KPMT-MC-0085', machineName: 'HONING MACHINE LV2-ST2-OP6',
     brand: 'TOYO', model: 'SL7', station: 'ST2-OP6', controller: 'PLC', priority: 'B',
+    plot: { x: 412, y: 991, rotation: 180 },
   },
   {
     machineId: 'WA016', masterId: 'KPMT-MC-0086', machineName: 'WASHING MACHINE LV2-OP7',
     brand: 'KATAOKA', model: 'SPC-203-B', station: 'OP7', controller: 'PLC', priority: 'B',
+    plot: { x: 388, y: 991, rotation: 180 },
   },
   {
     machineId: 'ES004', masterId: 'KPMT-MC-0087', machineName: 'END SCOPE LV1-OP8',
     brand: 'MAPOSS', model: 'E4N LVDT', station: 'OP8', controller: '—', priority: 'B',
+    plot: { x: 364, y: 991, rotation: 180 },
   },
 ];
 let loaderValve2Cursor = 0;
@@ -228,7 +235,9 @@ function createCncMachine(data, size) {
   addInteractiveMesh(group, new THREE.CylinderGeometry(0.07, 0.07, 0.11, 12), statusMaterial, [-size.w * 0.35, size.h + 0.43, -size.d * 0.2]);
 
   group.userData.bodyMaterial = bodyMaterial;
-  const label = makeLabelSprite(data.machineId, lineTypes[data.lineType].color);
+  const labelText = data.verifiedMaster && data.station ? `${data.machineId} · ${data.station}` : data.machineId;
+  const label = makeLabelSprite(labelText, lineTypes[data.lineType].color);
+  if (data.verifiedMaster) label.scale.set(0.8, 0.22, 1);
   label.position.set(0, size.h + 0.85, 0);
   label.visible = false;
   group.userData.label = label;
@@ -331,7 +340,7 @@ function createZone(zone) {
       lineName: 'LOADER VALVE 2',
       status,
       dataSource: 'Machine Master Production v4',
-      positionAccuracy: 'Approximate from plotted layout',
+      positionAccuracy: 'Plot-aligned pilot; flow pending site check',
       verifiedMaster: true,
     } : {
       machineId: `${zone.type}-${sequence}`,
@@ -347,10 +356,36 @@ function createZone(zone) {
     const machine = actualMachine?.modelType === 'makino-j4'
       ? createMakinoJ4(machineData, { w: machineW, h: machineH, d: machineD })
       : createCncMachine(machineData, { w: machineW, h: machineH, d: machineD });
-    machine.position.set(x, 0.12, z);
-    machine.rotation.y = longAxisIsDepth ? Math.PI / 2 : 0;
+    if (actualMachine?.plot) {
+      const plottedPosition = worldFromPixel(actualMachine.plot.x, actualMachine.plot.y);
+      machine.position.set(plottedPosition.x, 0.12, plottedPosition.z);
+      machine.rotation.y = THREE.MathUtils.degToRad(actualMachine.plot.rotation);
+    } else {
+      machine.position.set(x, 0.12, z);
+      machine.rotation.y = longAxisIsDepth ? Math.PI / 2 : 0;
+    }
     group.add(machine);
     machineRoots.push(machine);
+  }
+
+  if (zone.type === 'VALVE') {
+    const flowPoints = [
+      loaderValve2Machines[3],
+      loaderValve2Machines[0],
+      loaderValve2Machines[1],
+      loaderValve2Machines[2],
+      loaderValve2Machines[4],
+      loaderValve2Machines[5],
+      loaderValve2Machines[6],
+      loaderValve2Machines[7],
+    ].map((machine) => {
+      const position = worldFromPixel(machine.plot.x, machine.plot.y);
+      return new THREE.Vector3(position.x, 0.17, position.z);
+    });
+    const flowMaterial = new THREE.LineDashedMaterial({ color: 0x26c6ee, transparent: true, opacity: 0.72, dashSize: 0.12, gapSize: 0.08 });
+    const flowLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(flowPoints), flowMaterial);
+    flowLine.computeLineDistances();
+    group.add(flowLine);
   }
 
   if (!lineGroups.has(zone.type)) lineGroups.set(zone.type, []);
